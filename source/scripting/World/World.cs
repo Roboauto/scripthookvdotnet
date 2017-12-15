@@ -326,6 +326,34 @@ namespace GTA
 				}
 			}
 		}
+        /// <summary>
+		/// Gets or sets the weather.
+		/// </summary>
+		/// <value>
+		/// The weather.
+		/// </value>
+        public static Weather WeatherPersist
+        {
+            get
+            {
+                for (int i = 0; i < _weatherNames.Length; i++)
+                {
+                    if (Function.Call<int>(Hash.GET_PREV_WEATHER_TYPE_HASH_NAME) == Game.GenerateHash(_weatherNames[i]))
+                    {
+                        return (Weather)i;
+                    }
+                }
+
+                return Weather.Unknown;
+            }
+            set
+            {
+                if (Enum.IsDefined(typeof(Weather), value) && value != Weather.Unknown)
+                {
+                    Function.Call(Hash.SET_WEATHER_TYPE_NOW_PERSIST, _weatherNames[(int)value]);
+                }
+            }
+        }
 		/// <summary>
 		/// Gets or sets the next weather.
 		/// </summary>
