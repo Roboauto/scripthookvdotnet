@@ -525,7 +525,7 @@ namespace GTA
 			internal delegate ulong CheckpointHandleAddrDelegate(ulong baseAddr, int handle);
 			internal delegate ulong GetCheckpointBaseAddrDelegate();
 			internal delegate ulong GetLabelTextByHashFuncDelegate(ulong address, int labelHash);
-
+			internal delegate ulong FuncUlongUlongDelegate(ulong T);
 
 			internal static GetHashKeyDelegate _getHashKey;
 			internal static EntityAddressFuncDelegate EntityAddressFunc;
@@ -552,11 +552,10 @@ namespace GTA
 				byte* address;
 
 				// Get relative address and add it to the instruction address.
-				// 3 bytes equal the size of the opcode and its first argument. 7 bytes are the length of opcode and all its parameters.
-				address = FindPattern("\x33\xFF\xE8\x00\x00\x00\x00\x48\x85\xC0\x74\x58", "xxx????xxxxx");
-				EntityAddressFunc = GetDelegateForFunctionPointer<EntityAddressFuncDelegate>(new IntPtr(*(int*)(address + 3) + address + 7));
+				address = FindPattern("\xE8\x00\x00\x00\x00\x48\x8B\xD8\x48\x85\xC0\x74\x2E\x48\x83\x3D", "x????xxxxxxxxxxx");
+				EntityAddressFunc = GetDelegateForFunctionPointer<EntityAddressFuncDelegate>(new IntPtr(*(int*)(address + 1) + address + 5));
 
-				address = FindPattern("\xB2\x01\xE8\x00\x00\x00\x00\x33\xC9\x48\x85\xC0\x74\x3B", "xxx????xxxxxxx");
+				address = FindPattern("\xB2\x01\xE8\x00\x00\x00\x00\x48\x85\xC0\x74\x1C\x8A\x88", "xxx????xxxxxxx");
 				PlayerAddressFunc = GetDelegateForFunctionPointer<PlayerAddressFuncDelegate>(new IntPtr(*(int*)(address + 3) + address + 7));
 
 				address = FindPattern("\x74\x21\x48\x8B\x48\x20\x48\x85\xC9\x74\x18\x48\x8B\xD6\xE8", "xxxxxxxxxxxxxxx") - 10;
@@ -565,11 +564,12 @@ namespace GTA
 				address = FindPattern("\x48\xF7\xF9\x49\x8B\x48\x08\x48\x63\xD0\xC1\xE0\x08\x0F\xB6\x1C\x11\x03\xD8", "xxxxxxxxxxxxxxxxxxx");
 				AddEntityToPoolFunc = GetDelegateForFunctionPointer<AddEntityToPoolFuncDelegate>(new IntPtr(address - 0x68));
 
-				address = FindPattern("\x48\x8B\xC8\xE8\x00\x00\x00\x00\xF3\x0F\x10\x54\x24\x00\xF3\x0F\x10\x4C\x24\x00\xF3\x0F\x10", "xxxx????xxxxx?xxxxx?xxx");
-				EntityPositionFunc = GetDelegateForFunctionPointer<EntityPositionFuncDelegate>(new IntPtr(*(int*)(address + 4) + address + 8));
-				address = FindPattern("\x25\xFF\xFF\xFF\x3F\x89\x44\x24\x38\xE8\x00\x00\x00\x00\x48\x85\xC0\x74\x03", "xxxxxxxxxx????xxxxx");
-				EntityModel1Func = GetDelegateForFunctionPointer<EntityModel1FuncDelegate>(new IntPtr((*(int*)address - 61) + address - 57));
-				EntityModel2Func = GetDelegateForFunctionPointer<EntityModel2FuncDelegate>(new IntPtr(*(int*)(address + 10) + address + 14));
+				address = FindPattern("\x48\x8B\xDA\xE8\x00\x00\x00\x00\xF3\x0F\x10\x44\x24", "xxxx????xxxxx");
+				EntityPositionFunc = GetDelegateForFunctionPointer<EntityPositionFuncDelegate>(new IntPtr((address - 6)));
+				address = FindPattern("\x0F\x85\x00\x00\x00\x00\x48\x8B\x4B\x20\xE8\x00\x00\x00\x00\x48\x8B\xC8", "xx????xxxxx????xxx");
+				EntityModel1Func = GetDelegateForFunctionPointer<EntityModel1FuncDelegate>(new IntPtr((*(int*)address + 11) + address + 15));
+				address = FindPattern("\x45\x33\xC9\x3B\x05", "xxxxx");
+				EntityModel2Func = GetDelegateForFunctionPointer<EntityModel2FuncDelegate>(new IntPtr(address - 0x46));
 
 				address = FindPattern("\x0F\x84\x00\x00\x00\x00\x8B\x8B\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xBA\x09\x00\x00\x00", "xx????xx????x????xxxxx");
 				GetHandlingDataByIndex = GetDelegateForFunctionPointer<GetHandlingDataByIndexDelegate>(new IntPtr(*(int*)(address + 13) + address + 17));
@@ -585,8 +585,8 @@ namespace GTA
 				_pedPoolAddress = (ulong*)(*(int*)(address + 3) + address + 7);
 				address = FindPattern("\x48\x8B\x05\x00\x00\x00\x00\x8B\x78\x10\x85\xFF", "xxx????xxxxx");
 				_objectPoolAddress = (ulong*)(*(int*)(address + 3) + address + 7);
-				address = FindPattern("\x8B\xF0\x48\x8B\x05\x00\x00\x00\x00\xF3\x0F\x59\xF6", "xxxxx????xxxx");
-				_pickupObjectPoolAddress = (ulong*)(*(int*)(address + 5) + address + 9);
+				address = FindPattern("\x4C\x8B\x05\x00\x00\x00\x00\x40\x8A\xF2\x8B\xE9", "xxx????xxxxx");
+				_pickupObjectPoolAddress = (ulong*)(*(int*)(address + 3) + address + 7);
 
 				CreateNmMessageFuncAddress = (ulong)FindPattern("\x33\xDB\x48\x89\x1D\x00\x00\x00\x00\x85\xFF", "xxxxx????xx") - 0x42;
 				GiveNmMessageFuncAddress = (ulong)FindPattern("\x48\x8b\xc4\x48\x89\x58\x08\x48\x89\x68\x10\x48\x89\x70\x18\x48\x89\x78\x20\x41\x55\x41\x56\x41\x57\x48\x83\xec\x20\xe8\x00\x00\x00\x00\x48\x8b\xd8\x48\x85\xc0\x0f", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxx");
@@ -1244,10 +1244,10 @@ namespace GTA
 			}
 
 			private unsafe static ulong GetEntitySkeletonData(int handle)
-			{
+			{				
 				ulong MemAddress = EntityAddressFunc(handle);
 
-				var func2 = GetDelegateForFunctionPointer<Func<ulong, ulong>>(ReadIntPtr(ReadIntPtr(new IntPtr((long)MemAddress)) + 88));
+				var func2 = GetDelegateForFunctionPointer<FuncUlongUlongDelegate>(ReadIntPtr(ReadIntPtr(new IntPtr((long)MemAddress)) + 88));
 				ulong Addr2 = func2(MemAddress);
 				ulong Addr3;
 				if (Addr2 == 0)
